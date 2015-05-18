@@ -52,21 +52,18 @@ static int construct_pipeline(display_stream *st, GStreamerDecoder *decoder)
 {
     GError *err;
     int ret;
-    const gchar *src_caps, *gstdec_name;
+    const gchar *src_caps;
     gchar *desc;
 
     switch (st->codec) {
     case SPICE_VIDEO_CODEC_TYPE_MJPEG:
         src_caps = "image/jpeg";
-        gstdec_name = "jpegdec";
         break;
     case SPICE_VIDEO_CODEC_TYPE_VP8:
         src_caps = "video/x-vp8";
-        gstdec_name = "vp8dec";
         break;
     case SPICE_VIDEO_CODEC_TYPE_H264:
         src_caps = "video/x-h264,stream-format=byte-stream";
-        gstdec_name = "avdec_h264";
         break;
     default:
         spice_warning("Unknown codec type %d", st->codec);
@@ -74,7 +71,7 @@ static int construct_pipeline(display_stream *st, GStreamerDecoder *decoder)
     }
 
     err = NULL;
-    desc = g_strdup_printf("appsrc name=src caps=%s ! %s ! videoconvert ! appsink name=sink caps=video/x-raw,format=BGRx", src_caps, gstdec_name);
+    desc = g_strdup_printf("appsrc name=src caps=%s ! decodebin ! videoconvert ! appsink name=sink caps=video/x-raw,format=BGRx", src_caps);
     decoder->pipeline = gst_parse_launch_full(desc, NULL, GST_PARSE_FLAG_FATAL_ERRORS, &err);
     g_free(desc);
     if (!decoder->pipeline)
